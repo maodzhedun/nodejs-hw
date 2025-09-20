@@ -2,68 +2,35 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import pino from 'pino-http';
+
+import { connectMongoDB } from './db/connectMongoDB.js';
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
+import notesRoutes from './routes/notesRoutes.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ?? 3030;
 
-//Middleware
-app.use(cors()); // Enable CORS
-// Middleware for parsing JSON
-app.use(express.json());
-app.use(
-  pino({
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-        messageFormat: '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
-  }),
-);
+//Middleware  global
+app.use(logger); //Logger middleware
+app.use(express.json()); // Body parser middleware
+app.use(cors()); // Enable CORS for all routes
 
-// First route
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
+// Routes
+app.use(notesRoutes);
 
-// Notes for userid
-app.get('/notes/:userId', (req, res) => {
-  const { userId } = req.params;
-  res.status(200).json({ message: `Retrieved note with ID: ${userId}` });
-});
+// Handle 404 - Not Found
+app.use(notFoundHandler);
 
-app.post('/notes', (req, res) => {
-  console.log(req.body); // Log the request body to the console
-  res.status(201).json({ message: 'Note created' });
-});
+// Handle errors
+app.use(errorHandler);
 
-// Route to demonstrate error handling
-app.get('/test-error', (req, res) => {
-  // Example error
-  throw new Error('Simulated server error');
-});
-
-// Middleware 404 (`Not Found`)
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// Middleware for handling errors
-app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(500).json({
-    message: 'Internal Server Error',
-    error: err.message,
-  });
-});
+// Connect to MongoDB
+await connectMongoDB();
 
 // Start the server
 app.listen(PORT, () => {

@@ -5,8 +5,39 @@ import createHttpError from 'http-errors';
 
 // get all notes
 export const getNotes = async (req, res) => {
-  const notes = await Note.find();
-  res.status(200).json(notes);
+  // Get parameters from pagination
+  const { page = 1, perPage = 10, tag, search } = req.query;
+
+  const skip = (page - 1) * perPage;
+
+  // Create a base query to collection
+  const notesQuery = Note.find();
+
+  // If tag is provided, add it to the query
+  if (tag) {
+    notesQuery.where('tag').equals(tag);
+  }
+  // If search is provided, add it to the query
+  if (search) {
+    const searchRegex = new RegExp(search, 'i'); // 'i' for case-insensitive
+    notesQuery.or([{ title: searchRegex }, { content: searchRegex }]);
+  }
+
+  const [totalNotes, notes] = await Promise.all([
+    notesQuery.clone().countDocuments(), // Get total count of documents
+    notesQuery.skip(skip).limit(perPage), // Get paginated results
+  ]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalNotes / perPage);
+
+  res.status(200).json({
+    page,
+    perPage,
+    totalPages,
+    totalNotes,
+    notes,
+  });
 };
 
 // get notes by id

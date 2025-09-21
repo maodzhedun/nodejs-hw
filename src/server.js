@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
+import { errors } from "celebrate";
 import { connectMongoDB } from './db/connectMongoDB.js';
 import { logger } from './middleware/logger.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
@@ -25,6 +26,9 @@ app.use(notesRoutes);
 
 // Handle 404 - Not Found
 app.use(notFoundHandler);
+
+// Celebrate error handler
+app.use(errors());
 
 // Handle errors
 app.use(errorHandler);

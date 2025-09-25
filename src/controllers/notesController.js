@@ -11,7 +11,7 @@ export const getNotes = async (req, res) => {
   const skip = (page - 1) * perPage;
 
   // Create a base query to collection
-  const notesQuery = Note.find();
+  const notesQuery = Note.find({ userId: req.user._id });
 
   // If tag is provided, add it to the query
   if (tag) {
@@ -43,7 +43,7 @@ export const getNotes = async (req, res) => {
 // get notes by id
 export const getNoteById = async (req, res, next) => {
   const { noteId } = req.params;
-  const note = await Note.findById(noteId);
+  const note = await Note.findOne({ _id: noteId, userId: req.user._id });
 
   if (!note) {
     next(createHttpError(404, 'Note not found'));
@@ -55,7 +55,7 @@ export const getNoteById = async (req, res, next) => {
 
 // create a new note
 export const createNote = async (req, res) => {
-  const note = await Note.create(req.body);
+  const note = await Note.create({ ...req.body, userId: req.user._id });
   res.status(201).json(note);
 };
 
@@ -64,6 +64,7 @@ export const deleteNote = async (req, res, next) => {
   const { noteId } = req.params;
   const note = await Note.findOneAndDelete({
     _id: noteId,
+    userId: req.user._id,
   });
 
   if (!note) {
@@ -79,7 +80,7 @@ export const updateNote = async (req, res, next) => {
   const { noteId } = req.params;
 
   const note = await Note.findOneAndUpdate(
-    { _id: noteId }, // Search filter Id
+    { _id: noteId, userId: req.user._id }, // Search filter Id
     req.body,
     { new: true }, // Return the updated document
   );

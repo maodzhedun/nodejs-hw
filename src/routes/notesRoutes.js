@@ -6,16 +6,26 @@ import {
   getNotes,
   getNoteById,
   createNote,
-  deleteNote, updateNote,
+  deleteNote,
+  updateNote,
 } from '../controllers/notesController.js';
-import { createNoteSchema, noteIdParamSchema, updateNoteSchema, getAllNotesSchema } from '../validations/notesValidation.js';
+import {
+  createNoteSchema,
+  noteIdParamSchema,
+  updateNoteSchema,
+  getAllNotesSchema,
+} from '../validations/notesValidation.js';
+
+import { authenticate } from "../middleware/authenticate.js";
 
 const router = Router();
 
+router.use(authenticate); // Apply authentication middleware to all note routes
+
 router.get('/notes', celebrate(getAllNotesSchema), getNotes);
 router.get('/notes/:noteId', celebrate(noteIdParamSchema), getNoteById);
-router.post('/notes',celebrate(createNoteSchema), createNote);
-router.delete('/notes/:noteId',celebrate(noteIdParamSchema), deleteNote);
-router.patch('/notes/:noteId', celebrate(updateNoteSchema),updateNote);
+router.post('/notes', celebrate(createNoteSchema), createNote);
+router.delete('/notes/:noteId', celebrate(noteIdParamSchema), deleteNote);
+router.patch('/notes/:noteId', celebrate(updateNoteSchema), updateNote);
 
 export default router;

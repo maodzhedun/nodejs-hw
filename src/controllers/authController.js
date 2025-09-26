@@ -33,7 +33,7 @@ export const registerUser = async (req, res, next) => {
   // We call, transfer the response object and session to set cookies
   setSessionCookies(res, newSession);
 
-  res.status(201).json({newUser});
+  res.status(201).json(newUser);
 };
 
 

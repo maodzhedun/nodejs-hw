@@ -12,6 +12,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 import authRoutes from './routes/authRoutes.js';
 import notesRoutes from './routes/notesRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cookieParser()); // Cookie parser middleware
 // Routes
 app.use(authRoutes);
 app.use(notesRoutes);
+app.use(userRoutes);
 
 // Handle 404 - Not Found
 app.use(notFoundHandler);

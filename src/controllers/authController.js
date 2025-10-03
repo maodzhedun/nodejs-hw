@@ -130,10 +130,14 @@ export const requestResetEmail = async (req, res, next) => {
 
   const user = await User.findOne({ email });
   // If the user does not exist, we return the same neutral response
+  // if (!user) {
+  //   return res.status(200).json({
+  //     message: 'If this email exists, a reset link has been sent',
+  //   });
+  // }
+  // If user not found - less secure but more user friendly
   if (!user) {
-    return res.status(200).json({
-      message: 'If this email exists, a reset link has been sent',
-    });
+    return next(createHttpError(404, 'User not found'));
   }
 
   // User exists, create a JWT token for password reset
